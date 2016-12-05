@@ -16,7 +16,7 @@ import java.util.List;
 
 @AllArgsConstructor
 @Getter
-abstract class RequestParams {
+public abstract class RequestParams {
 
     protected static final String PARAM_KEY = "key";
     protected static final String PARAM_Q = "q";
