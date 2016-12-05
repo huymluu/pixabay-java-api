@@ -1,7 +1,12 @@
 package com.unikre.pixabay;
 
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+import com.unikre.pixabay.http.ImageHit;
 import com.unikre.pixabay.http.ImageSearchRequestParams;
 import com.unikre.pixabay.http.RequestParams;
+import com.unikre.pixabay.http.Response;
+import com.unikre.pixabay.http.VideoHit;
 import com.unikre.pixabay.http.VideoSearchRequestParams;
 import lombok.Getter;
 import lombok.Setter;
@@ -13,6 +18,8 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 import org.json.JSONObject;
+
+import java.lang.reflect.Type;
 
 public class PixabayClient {
     public static final int REQUEST_LIMIT_PER_HOUR = 5000;
@@ -34,6 +41,8 @@ public class PixabayClient {
     protected int remainingSecsToResetLimit;
 
     protected final CloseableHttpClient httpClient;
+
+    private static final Gson gson = new Gson();
 
 
     public PixabayClient(String apiKey) {
@@ -91,12 +100,19 @@ public class PixabayClient {
         return response;
     }
 
-    public JSONObject searchImage(ImageSearchRequestParams params) throws Exception {
-        CloseableHttpResponse response = request(params);
-        return new JSONObject(EntityUtils.toString(response.getEntity()));
+    /**
+     * Image search
+     **/
+    public Response searchImage(ImageSearchRequestParams params) throws Exception {
+        CloseableHttpResponse closeableHttpResponse = request(params);
+        JSONObject jsonObject = new JSONObject(EntityUtils.toString(closeableHttpResponse.getEntity()));
+
+        Type collectionType = new TypeToken<Response<ImageHit>>() {
+        }.getType();
+        return gson.fromJson(jsonObject.toString(), collectionType);
     }
 
-    public JSONObject searchImage(String q) throws Exception {
+    public Response searchImage(String q) throws Exception {
         ImageSearchRequestParams params = ImageSearchRequestParams.builder()
                 .key(apiKey)
                 .q(q)
@@ -105,12 +121,19 @@ public class PixabayClient {
         return searchImage(params);
     }
 
-    public JSONObject searchVideo(VideoSearchRequestParams params) throws Exception {
+    /**
+     * Video search
+     **/
+    public Response searchVideo(VideoSearchRequestParams params) throws Exception {
         CloseableHttpResponse response = request(params);
-        return new JSONObject(EntityUtils.toString(response.getEntity()));
+        JSONObject jsonObject = new JSONObject(EntityUtils.toString(response.getEntity()));
+
+        Type collectionType = new TypeToken<Response<VideoHit>>() {
+        }.getType();
+        return gson.fromJson(jsonObject.toString(), collectionType);
     }
 
-    public JSONObject searchVideo(String q) throws Exception {
+    public Response searchVideo(String q) throws Exception {
         VideoSearchRequestParams params = VideoSearchRequestParams.builder()
                 .key(apiKey)
                 .q(q)
