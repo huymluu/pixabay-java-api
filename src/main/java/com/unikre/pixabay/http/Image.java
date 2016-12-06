@@ -3,7 +3,7 @@ package com.unikre.pixabay.http;
 import lombok.Data;
 
 @Data
-public class ImageHit extends Hit {
+public class Image extends Hit {
     private String id_hash;
     private String largeImageURL;
     private String fullHDURL;

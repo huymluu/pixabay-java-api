@@ -3,7 +3,7 @@ package com.unikre.pixabay.http;
 import lombok.Data;
 
 @Data
-public class VideoHit extends Hit {
+public class Video extends Hit {
     private String picture_id;
 
 }

@@ -2,11 +2,11 @@ package com.unikre.pixabay;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import com.unikre.pixabay.http.ImageHit;
+import com.unikre.pixabay.http.Image;
 import com.unikre.pixabay.http.ImageSearchRequestParams;
 import com.unikre.pixabay.http.RequestParams;
 import com.unikre.pixabay.http.Response;
-import com.unikre.pixabay.http.VideoHit;
+import com.unikre.pixabay.http.Video;
 import com.unikre.pixabay.http.VideoSearchRequestParams;
 import lombok.Getter;
 import lombok.Setter;
@@ -107,7 +107,7 @@ public class PixabayClient {
         CloseableHttpResponse closeableHttpResponse = request(params);
         JSONObject jsonObject = new JSONObject(EntityUtils.toString(closeableHttpResponse.getEntity()));
 
-        Type collectionType = new TypeToken<Response<ImageHit>>() {
+        Type collectionType = new TypeToken<Response<Image>>() {
         }.getType();
         return gson.fromJson(jsonObject.toString(), collectionType);
     }
@@ -128,7 +128,7 @@ public class PixabayClient {
         CloseableHttpResponse response = request(params);
         JSONObject jsonObject = new JSONObject(EntityUtils.toString(response.getEntity()));
 
-        Type collectionType = new TypeToken<Response<VideoHit>>() {
+        Type collectionType = new TypeToken<Response<Video>>() {
         }.getType();
         return gson.fromJson(jsonObject.toString(), collectionType);
     }
