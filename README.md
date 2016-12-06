@@ -25,7 +25,7 @@ ImageSearchRequestParams params = ImageSearchRequestParams.builder()
 Result<Image> imageResponse = client.searchImage(params);
 
 // Async request
-pixabay.searchImage("book", new PixabayCallback<Result<Image>>() {
+client.searchImage("book", new PixabayCallback<Result<Image>>() {
     @Override
     public void onResponse(Result<Image> result) {
         // Handle result here
@@ -52,7 +52,7 @@ VideoSearchRequestParams params = VideoSearchRequestParams.builder()
 Result<Video> videoResponse = client.searchVideo(params);
 
 // Async request
-pixabay.searchVideo("book", new PixabayCallback<Result<Video>>() {
+client.searchVideo("book", new PixabayCallback<Result<Video>>() {
     @Override
     public void onResponse(Result<Video> result) {
         // Handle result here
@@ -63,7 +63,6 @@ pixabay.searchVideo("book", new PixabayCallback<Result<Video>>() {
         // ...
     }
 });
-```
 ```
 
 ## Disclaimer
