@@ -13,30 +13,30 @@ PixabayClient client = new PixabayClient("YOUR API KEY");
 ## Image Searching
 ```java
 // Image search: with keyword
-Response<ImageHit> imageResponse = client.searchImage("flowers");
+Result<Image> imageResponse = client.searchImage("flowers");
 
 // Image search: with full parameter (see https://pixabay.com/api/docs/)
 ImageSearchRequestParams params = ImageSearchRequestParams.builder()
                 .key(apiKey)
                 .imageType(ImageType.VECTOR)
                 .orientation(Orientation.HORIZONTAL)
-                .q(q)
+                .q("flowers")
                 .build();
-Response<ImageHit> imageResponse = client.searchImage(params);
+Result<Image> imageResponse = client.searchImage(params);
 ```
 
 ## Video Searching
 ```java
 // Video search: with keyword
-Response<VideoHit> videoResponse = client.searchVideo("flowers");
+Result<Video> videoResponse = client.searchVideo("flowers");
 
 // Video search: with full parameter (see https://pixabay.com/api/docs/)
 VideoSearchRequestParams params = VideoSearchRequestParams.builder()
                 .key(apiKey)
                 .videoType(VideoType.FILM)
-                .q(q)
+                .q("flowers")
                 .build();
-Response<VideoHit> videoResponse = client.searchVideo(params);
+Result<Video> videoResponse = client.searchVideo(params);
 ```
 
 ## Disclaimer

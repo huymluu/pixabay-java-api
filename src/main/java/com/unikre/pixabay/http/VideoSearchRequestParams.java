@@ -5,15 +5,10 @@ import com.unikre.pixabay.params.Language;
 import com.unikre.pixabay.params.Order;
 import com.unikre.pixabay.params.VideoType;
 import lombok.Builder;
-import org.apache.http.NameValuePair;
-import org.apache.http.message.BasicNameValuePair;
+import lombok.Getter;
 
-import java.util.List;
-
+@Getter
 public class VideoSearchRequestParams extends RequestParams {
-
-    protected static final String PARAM_VIDEO_TYPE = "video_type";
-
     private VideoType videoType;
 
     @Builder
@@ -37,21 +32,4 @@ public class VideoSearchRequestParams extends RequestParams {
 
         this.videoType = videoType;
     }
-
-    @Override
-    protected List<NameValuePair> buildHttpParams() {
-        List<NameValuePair> params = super.buildHttpParams();
-
-        if (videoType != null) {
-            params.add(new BasicNameValuePair(PARAM_VIDEO_TYPE, videoType.toString()));
-        }
-
-        return params;
-    }
-
-    @Override
-    protected String getURLPath() throws Exception {
-        return "/videos";
-    }
-
 }

@@ -4,20 +4,16 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.unikre.pixabay.http.Image;
 import com.unikre.pixabay.http.ImageSearchRequestParams;
-import com.unikre.pixabay.http.RequestParams;
-import com.unikre.pixabay.http.Response;
+import com.unikre.pixabay.http.Result;
 import com.unikre.pixabay.http.Video;
 import com.unikre.pixabay.http.VideoSearchRequestParams;
 import lombok.Getter;
 import lombok.Setter;
-import org.apache.http.Header;
-import org.apache.http.HttpEntity;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.util.EntityUtils;
+import okhttp3.ResponseBody;
 import org.json.JSONObject;
+import retrofit2.Call;
+import retrofit2.Response;
+import retrofit2.Retrofit;
 
 import java.lang.reflect.Type;
 
@@ -29,90 +25,94 @@ public class PixabayClient {
     protected String apiKey;
 
     @Getter
-    @Setter
     protected int requestsLimitIn30min;
 
     @Getter
-    @Setter
     protected int remainingRequests;
 
     @Getter
-    @Setter
     protected int remainingSecsToResetLimit;
 
-    protected final CloseableHttpClient httpClient;
+    private PixabayService pixabayService;
 
-    private static final Gson gson = new Gson();
-
+    private final Gson gson = new Gson();
 
     public PixabayClient(String apiKey) {
         setApiKey(apiKey);
 
-        httpClient = HttpClients.createDefault();
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl("https://pixabay.com")
+                .build();
+        pixabayService = retrofit.create(PixabayService.class);
     }
 
-    private void parseRateLimit(CloseableHttpResponse response) {
-        Header header = response.getFirstHeader("X-RateLimit-Limit");
-        if (header != null) {
-            String value = header.getValue();
-            if (value != null && value.length() > 0)
-                requestsLimitIn30min = Integer.parseInt(value);
+    private void parseRateLimit(Response response) {
+        String value = response.headers().get("X-RateLimit-Limit");
+        if (value != null && value.length() > 0) {
+            requestsLimitIn30min = Integer.parseInt(value);
         }
 
-        header = response.getFirstHeader("X-RateLimit-Remaining");
-        if (header != null) {
-            String value = header.getValue();
-            if (value != null && value.length() > 0)
-                remainingRequests = Integer.parseInt(value);
+        value = response.headers().get("X-RateLimit-Remaining");
+        if (value != null && value.length() > 0) {
+            remainingRequests = Integer.parseInt(value);
         }
 
-        header = response.getFirstHeader("X-RateLimit-Reset");
-        if (header != null) {
-            String value = header.getValue();
-            if (value != null && value.length() > 0)
-                remainingSecsToResetLimit = Integer.parseInt(value);
+        value = response.headers().get("X-RateLimit-Reset");
+        if (value != null && value.length() > 0) {
+            remainingSecsToResetLimit = Integer.parseInt(value);
         }
 
     }
 
-    private void validateResponse(CloseableHttpResponse response) throws Exception {
-        // Response - status code
-        int statusCode = response.getStatusLine().getStatusCode();
+    private void validateResponse(Response response) throws Exception {
+        // Result - status code
+        int statusCode = response.code();
         if (statusCode != 200) {
-            throw new Exception("API call error: " + statusCode + " - " + response.getStatusLine().getReasonPhrase());
+            throw new Exception("API call error: " + statusCode + " - " + response.message());
         }
 
-        // Response - body
-        HttpEntity httpEntity = response.getEntity();
-        if (httpEntity == null) {
+        // Result - body
+        if (response.body() == null) {
             throw new Exception("API call error: Empty response body");
         }
-    }
-
-    private CloseableHttpResponse request(RequestParams requestParams) throws Exception {
-        HttpGet httpGet = requestParams.buildHttpGet();
-
-        CloseableHttpResponse response = httpClient.execute(httpGet);
-
-        parseRateLimit(response);
-        validateResponse(response);
-
-        return response;
     }
 
     /**
      * Image search
      **/
-    public Response searchImage(ImageSearchRequestParams params) throws Exception {
-        CloseableHttpResponse closeableHttpResponse = request(params);
-        JSONObject jsonObject = new JSONObject(EntityUtils.toString(closeableHttpResponse.getEntity()));
+    public Result<Image> searchImage(ImageSearchRequestParams params) throws Exception {
 
-        Type collectionType = new TypeToken<Response<Image>>() {
+        Call<ResponseBody> call = pixabayService.searchImages(params.getKey(),
+                params.getQ(),
+                params.getLang(),
+                params.getId(),
+                params.getCategory(),
+                params.getMinWidth(),
+                params.getMinHeight(),
+                params.getEditorsChoice(),
+                params.getSafeSearch(),
+                params.getOrder(),
+                params.getPage(),
+                params.getPerPage(),
+                params.getPretty(),
+
+                params.getResponseGroup(),
+                params.getImageType(),
+                params.getOrientation());
+
+        Response<ResponseBody> response = call.execute();
+
+        parseRateLimit(response);
+        validateResponse(response);
+
+        JSONObject jsonObject = new JSONObject(response.body().string());
+
+        Type collectionType = new TypeToken<Result<Image>>() {
         }.getType();
         return gson.fromJson(jsonObject.toString(), collectionType);
     }
 
-    public Response searchImage(String q) throws Exception {
+    public Result<Image> searchImage(String q) throws Exception {
         ImageSearchRequestParams params = ImageSearchRequestParams.builder()
                 .key(apiKey)
                 .q(q)
@@ -124,16 +124,33 @@ public class PixabayClient {
     /**
      * Video search
      **/
-    public Response searchVideo(VideoSearchRequestParams params) throws Exception {
-        CloseableHttpResponse response = request(params);
-        JSONObject jsonObject = new JSONObject(EntityUtils.toString(response.getEntity()));
+    public Result<Video> searchVideo(VideoSearchRequestParams params) throws Exception {
+        Call<ResponseBody> call = pixabayService.searchVideos(params.getKey(),
+                params.getQ(),
+                params.getLang(),
+                params.getId(),
+                params.getCategory(),
+                params.getMinWidth(),
+                params.getMinHeight(),
+                params.getEditorsChoice(),
+                params.getSafeSearch(),
+                params.getOrder(),
+                params.getPage(),
+                params.getPerPage(),
+                params.getPretty(),
 
-        Type collectionType = new TypeToken<Response<Video>>() {
+                params.getVideoType());
+
+        Response<ResponseBody> response = call.execute();
+
+        JSONObject jsonObject = new JSONObject(response.body().string());
+
+        Type collectionType = new TypeToken<Result<Video>>() {
         }.getType();
         return gson.fromJson(jsonObject.toString(), collectionType);
     }
 
-    public Response searchVideo(String q) throws Exception {
+    public Result<Video> searchVideo(String q) throws Exception {
         VideoSearchRequestParams params = VideoSearchRequestParams.builder()
                 .key(apiKey)
                 .q(q)

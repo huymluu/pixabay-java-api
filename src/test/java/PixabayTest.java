@@ -1,6 +1,6 @@
 import com.unikre.pixabay.PixabayClient;
 import com.unikre.pixabay.http.Image;
-import com.unikre.pixabay.http.Response;
+import com.unikre.pixabay.http.Result;
 import com.unikre.pixabay.http.Video;
 import org.junit.Assert;
 import org.junit.Test;
@@ -17,10 +17,10 @@ public class PixabayTest {
 
     @Test
     public void testSimpleSearch() throws Exception {
-        Response<Image> imageResponse = pixabay.searchImage("flowers");
+        Result<Image> imageResponse = pixabay.searchImage("flowers");
         Assert.assertNotNull(imageResponse);
 
-        Response<Video> videoResponse = pixabay.searchVideo("flowers");
+        Result<Video> videoResponse = pixabay.searchVideo("flowers");
         Assert.assertNotNull(videoResponse);
     }
 }
