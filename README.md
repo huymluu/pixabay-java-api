@@ -23,6 +23,19 @@ ImageSearchRequestParams params = ImageSearchRequestParams.builder()
                 .q("flowers")
                 .build();
 Result<Image> imageResponse = client.searchImage(params);
+
+// Async request
+client.searchImage("book", new PixabayCallback<Result<Image>>() {
+    @Override
+    public void onResponse(Result<Image> result) {
+        // Handle result here
+    }
+
+    @Override
+    public void onFailure(Throwable t) {
+        // ...
+    }
+});
 ```
 
 ## Video Searching
@@ -37,6 +50,19 @@ VideoSearchRequestParams params = VideoSearchRequestParams.builder()
                 .q("flowers")
                 .build();
 Result<Video> videoResponse = client.searchVideo(params);
+
+// Async request
+client.searchVideo("book", new PixabayCallback<Result<Video>>() {
+    @Override
+    public void onResponse(Result<Video> result) {
+        // Handle result here
+    }
+
+    @Override
+    public void onFailure(Throwable t) {
+        // ...
+    }
+});
 ```
 
 ## Disclaimer
