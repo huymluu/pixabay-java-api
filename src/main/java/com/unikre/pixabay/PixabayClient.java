@@ -130,7 +130,7 @@ public class PixabayClient {
         return searchImage(params);
     }
 
-    public void searchImage(ImageSearchRequestParams params, final PixabayCallback<Result<Image>> callback) throws Exception {
+    public void searchImage(ImageSearchRequestParams params, final PixabayCallback<Result<Image>> callback) {
 
         Call<ResponseBody> call = pixabayService.searchImages(params.getKey(),
                 params.getQ(),
@@ -170,7 +170,7 @@ public class PixabayClient {
         call.enqueue(genericCallback);
     }
 
-    public void searchImage(String q, PixabayCallback<Result<Image>> callback) throws Exception {
+    public void searchImage(String q, PixabayCallback<Result<Image>> callback) {
         ImageSearchRequestParams params = ImageSearchRequestParams.builder()
                 .key(apiKey)
                 .q(q)
@@ -216,7 +216,7 @@ public class PixabayClient {
         return searchVideo(params);
     }
 
-    public void searchVideo(VideoSearchRequestParams params, final PixabayCallback<Result<Video>> callback) throws Exception {
+    public void searchVideo(VideoSearchRequestParams params, final PixabayCallback<Result<Video>> callback) {
 
         Call<ResponseBody> call = pixabayService.searchVideos(params.getKey(),
                 params.getQ(),
@@ -254,7 +254,7 @@ public class PixabayClient {
         call.enqueue(genericCallback);
     }
 
-    public void searchVideo(String q, PixabayCallback<Result<Video>> callback) throws Exception {
+    public void searchVideo(String q, PixabayCallback<Result<Video>> callback) {
         VideoSearchRequestParams params = VideoSearchRequestParams.builder()
                 .key(apiKey)
                 .q(q)
