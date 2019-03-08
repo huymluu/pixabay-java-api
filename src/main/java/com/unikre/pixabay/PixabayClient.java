@@ -93,12 +93,9 @@ public class PixabayClient {
         return gson.fromJson(jsonObject.toString(), type);
     }
 
-    /**
-     * Image search
-     **/
-    public Result<Image> searchImage(ImageSearchRequestParams params) throws Exception {
 
-        Call<ResponseBody> call = pixabayService.searchImages(params.getKey(),
+    private Call<ResponseBody> imageSearchRequestToCall(ImageSearchRequestParams params) {
+        return pixabayService.searchImages(params.getKey(),
                 params.getQ(),
                 params.getLang(),
                 params.getId(),
@@ -111,12 +108,16 @@ public class PixabayClient {
                 params.getPage(),
                 params.getPerPage(),
                 params.getPretty(),
-
                 params.getResponseGroup(),
                 params.getImageType(),
                 params.getOrientation());
+    }
 
-        Response<ResponseBody> response = call.execute();
+    /**
+     * Image search
+     **/
+    public Result<Image> searchImage(ImageSearchRequestParams params) throws Exception {
+        Response<ResponseBody> response = imageSearchRequestToCall(params).execute();
 
         return parseResponse(response, IMAGE_RESULT_TYPE);
     }
@@ -132,23 +133,7 @@ public class PixabayClient {
 
     public void searchImage(ImageSearchRequestParams params, final PixabayCallback<Result<Image>> callback) {
 
-        Call<ResponseBody> call = pixabayService.searchImages(params.getKey(),
-                params.getQ(),
-                params.getLang(),
-                params.getId(),
-                params.getCategory(),
-                params.getMinWidth(),
-                params.getMinHeight(),
-                params.getEditorsChoice(),
-                params.getSafeSearch(),
-                params.getOrder(),
-                params.getPage(),
-                params.getPerPage(),
-                params.getPretty(),
-
-                params.getResponseGroup(),
-                params.getImageType(),
-                params.getOrientation());
+        Call<ResponseBody> call = imageSearchRequestToCall(params);
 
         Callback<ResponseBody> genericCallback = new Callback<ResponseBody>() {
             @Override
@@ -179,11 +164,8 @@ public class PixabayClient {
         searchImage(params, callback);
     }
 
-    /**
-     * Video search
-     **/
-    public Result<Video> searchVideo(VideoSearchRequestParams params) throws Exception {
-        Call<ResponseBody> call = pixabayService.searchVideos(params.getKey(),
+    private Call<ResponseBody> videoSearchRequestParamsToCall(VideoSearchRequestParams params) {
+        return pixabayService.searchVideos(params.getKey(),
                 params.getQ(),
                 params.getLang(),
                 params.getId(),
@@ -196,8 +178,15 @@ public class PixabayClient {
                 params.getPage(),
                 params.getPerPage(),
                 params.getPretty(),
-
                 params.getVideoType());
+
+    }
+
+    /**
+     * Video search
+     **/
+    public Result<Video> searchVideo(VideoSearchRequestParams params) throws Exception {
+        Call<ResponseBody> call = videoSearchRequestParamsToCall(params);
 
         Response<ResponseBody> response = call.execute();
 
@@ -217,23 +206,7 @@ public class PixabayClient {
     }
 
     public void searchVideo(VideoSearchRequestParams params, final PixabayCallback<Result<Video>> callback) {
-
-        Call<ResponseBody> call = pixabayService.searchVideos(params.getKey(),
-                params.getQ(),
-                params.getLang(),
-                params.getId(),
-                params.getCategory(),
-                params.getMinWidth(),
-                params.getMinHeight(),
-                params.getEditorsChoice(),
-                params.getSafeSearch(),
-                params.getOrder(),
-                params.getPage(),
-                params.getPerPage(),
-                params.getPretty(),
-
-                params.getVideoType());
-
+        Call<ResponseBody> call = videoSearchRequestParamsToCall(params);
         Callback<ResponseBody> genericCallback = new Callback<ResponseBody>() {
             @Override
             public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
