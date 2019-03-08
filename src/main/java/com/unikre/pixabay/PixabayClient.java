@@ -2,6 +2,7 @@ package com.unikre.pixabay;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import com.unikre.pixabay.http.Hit;
 import com.unikre.pixabay.http.Image;
 import com.unikre.pixabay.http.ImageSearchRequestParams;
 import com.unikre.pixabay.http.Result;
@@ -84,7 +85,7 @@ public class PixabayClient {
         }
     }
 
-    public Result parseResponse(Response<ResponseBody> response, Type type) throws Exception {
+    private <T extends Hit> Result<T> parseResponse(Response<ResponseBody> response, Type type) throws Exception {
         parseRateLimit(response);
         validateResponse(response);
 
@@ -93,12 +94,9 @@ public class PixabayClient {
         return gson.fromJson(jsonObject.toString(), type);
     }
 
-    /**
-     * Image search
-     **/
-    public Result<Image> searchImage(ImageSearchRequestParams params) throws Exception {
 
-        Call<ResponseBody> call = pixabayService.searchImages(params.getKey(),
+    private Call<ResponseBody> imageSearchRequestToCall(ImageSearchRequestParams params) {
+        return pixabayService.searchImages(params.getKey(),
                 params.getQ(),
                 params.getLang(),
                 params.getId(),
@@ -111,12 +109,16 @@ public class PixabayClient {
                 params.getPage(),
                 params.getPerPage(),
                 params.getPretty(),
-
                 params.getResponseGroup(),
                 params.getImageType(),
                 params.getOrientation());
+    }
 
-        Response<ResponseBody> response = call.execute();
+    /**
+     * Image search
+     **/
+    public Result<Image> searchImage(ImageSearchRequestParams params) throws Exception {
+        Response<ResponseBody> response = imageSearchRequestToCall(params).execute();
 
         return parseResponse(response, IMAGE_RESULT_TYPE);
     }
@@ -130,31 +132,12 @@ public class PixabayClient {
         return searchImage(params);
     }
 
-    public void searchImage(ImageSearchRequestParams params, final PixabayCallback<Result<Image>> callback) {
-
-        Call<ResponseBody> call = pixabayService.searchImages(params.getKey(),
-                params.getQ(),
-                params.getLang(),
-                params.getId(),
-                params.getCategory(),
-                params.getMinWidth(),
-                params.getMinHeight(),
-                params.getEditorsChoice(),
-                params.getSafeSearch(),
-                params.getOrder(),
-                params.getPage(),
-                params.getPerPage(),
-                params.getPretty(),
-
-                params.getResponseGroup(),
-                params.getImageType(),
-                params.getOrientation());
-
+    private <T extends Hit> void enqueueCall(Call<ResponseBody> call, final PixabayCallback<Result<T>> callback, final Type type) {
         Callback<ResponseBody> genericCallback = new Callback<ResponseBody>() {
             @Override
             public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
                 try {
-                    Result<Image> result = parseResponse(response, IMAGE_RESULT_TYPE);
+                    final Result<T> result = parseResponse(response, type);
                     callback.onResponse(result);
                 } catch (Exception e) {
                     callback.onFailure(e);
@@ -170,6 +153,11 @@ public class PixabayClient {
         call.enqueue(genericCallback);
     }
 
+    public void searchImage(ImageSearchRequestParams params, final PixabayCallback<Result<Image>> callback) {
+        Call<ResponseBody> call = imageSearchRequestToCall(params);
+        enqueueCall(call, callback, IMAGE_RESULT_TYPE);
+    }
+
     public void searchImage(String q, PixabayCallback<Result<Image>> callback) {
         ImageSearchRequestParams params = ImageSearchRequestParams.builder()
                 .key(apiKey)
@@ -179,11 +167,8 @@ public class PixabayClient {
         searchImage(params, callback);
     }
 
-    /**
-     * Video search
-     **/
-    public Result<Video> searchVideo(VideoSearchRequestParams params) throws Exception {
-        Call<ResponseBody> call = pixabayService.searchVideos(params.getKey(),
+    private Call<ResponseBody> videoSearchRequestParamsToCall(VideoSearchRequestParams params) {
+        return pixabayService.searchVideos(params.getKey(),
                 params.getQ(),
                 params.getLang(),
                 params.getId(),
@@ -196,8 +181,15 @@ public class PixabayClient {
                 params.getPage(),
                 params.getPerPage(),
                 params.getPretty(),
-
                 params.getVideoType());
+
+    }
+
+    /**
+     * Video search
+     **/
+    public Result<Video> searchVideo(VideoSearchRequestParams params) throws Exception {
+        Call<ResponseBody> call = videoSearchRequestParamsToCall(params);
 
         Response<ResponseBody> response = call.execute();
 
@@ -217,23 +209,7 @@ public class PixabayClient {
     }
 
     public void searchVideo(VideoSearchRequestParams params, final PixabayCallback<Result<Video>> callback) {
-
-        Call<ResponseBody> call = pixabayService.searchVideos(params.getKey(),
-                params.getQ(),
-                params.getLang(),
-                params.getId(),
-                params.getCategory(),
-                params.getMinWidth(),
-                params.getMinHeight(),
-                params.getEditorsChoice(),
-                params.getSafeSearch(),
-                params.getOrder(),
-                params.getPage(),
-                params.getPerPage(),
-                params.getPretty(),
-
-                params.getVideoType());
-
+        Call<ResponseBody> call = videoSearchRequestParamsToCall(params);
         Callback<ResponseBody> genericCallback = new Callback<ResponseBody>() {
             @Override
             public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
