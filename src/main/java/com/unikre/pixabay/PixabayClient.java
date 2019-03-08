@@ -2,6 +2,7 @@ package com.unikre.pixabay;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import com.unikre.pixabay.http.Hit;
 import com.unikre.pixabay.http.Image;
 import com.unikre.pixabay.http.ImageSearchRequestParams;
 import com.unikre.pixabay.http.Result;
@@ -84,7 +85,7 @@ public class PixabayClient {
         }
     }
 
-    public Result parseResponse(Response<ResponseBody> response, Type type) throws Exception {
+    private <T extends Hit> Result<T> parseResponse(Response<ResponseBody> response, Type type) throws Exception {
         parseRateLimit(response);
         validateResponse(response);
 
@@ -131,15 +132,12 @@ public class PixabayClient {
         return searchImage(params);
     }
 
-    public void searchImage(ImageSearchRequestParams params, final PixabayCallback<Result<Image>> callback) {
-
-        Call<ResponseBody> call = imageSearchRequestToCall(params);
-
+    private <T extends Hit> void enqueueCall(Call<ResponseBody> call, final PixabayCallback<Result<T>> callback, final Type type) {
         Callback<ResponseBody> genericCallback = new Callback<ResponseBody>() {
             @Override
             public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
                 try {
-                    Result<Image> result = parseResponse(response, IMAGE_RESULT_TYPE);
+                    final Result<T> result = parseResponse(response, type);
                     callback.onResponse(result);
                 } catch (Exception e) {
                     callback.onFailure(e);
@@ -153,6 +151,11 @@ public class PixabayClient {
         };
 
         call.enqueue(genericCallback);
+    }
+
+    public void searchImage(ImageSearchRequestParams params, final PixabayCallback<Result<Image>> callback) {
+        Call<ResponseBody> call = imageSearchRequestToCall(params);
+        enqueueCall(call, callback, IMAGE_RESULT_TYPE);
     }
 
     public void searchImage(String q, PixabayCallback<Result<Image>> callback) {
